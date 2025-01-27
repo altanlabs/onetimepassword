@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { LanguageSwitcher } from '@/components/blocks/language-switcher';
 import { CopyButton } from '@/components/ui/copy-button';
+import { BackgroundImage } from '@/components/blocks/background-image';
 import { storeMessage } from '@/utils/api';
 
 const generateSecurePassword = () => {
@@ -80,80 +81,85 @@ export default function HomePage() {
   };
 
   return (
-    <div className="container max-w-2xl mx-auto p-6">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold">{t('title')}</h1>
-        <LanguageSwitcher />
-      </div>
-      
-      <Card className="p-6">
-        <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="message">{t('messageTab')}</TabsTrigger>
-            <TabsTrigger value="password">{t('passwordTab')}</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="message">
-            <div className="space-y-4">
-              <Textarea
-                placeholder={t('enterMessage')}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="min-h-[150px]"
-              />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="password">
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Input
-                  type="text"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder={t('passwordPlaceholder')}
-                  readOnly
-                />
-                {message && <CopyButton value={message} />}
-              </div>
-              <Button 
-                onClick={handleGeneratePassword}
-                className="w-full"
-                variant="outline"
-              >
-                {t('generatePassword')}
-              </Button>
-            </div>
-          </TabsContent>
-
-          <div className="mt-6">
-            <Button
-              onClick={handleSubmit}
-              className="w-full"
-              disabled={!message || loading}
-            >
-              {loading ? t('generating') : t('generateLink')}
-            </Button>
+    <>
+      <BackgroundImage />
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="w-full max-w-2xl">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-4xl font-bold text-white">{t('title')}</h1>
+            <LanguageSwitcher />
           </div>
+          
+          <Card className="p-6 bg-white/90 backdrop-blur-sm">
+            <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="message">{t('messageTab')}</TabsTrigger>
+                <TabsTrigger value="password">{t('passwordTab')}</TabsTrigger>
+              </TabsList>
 
-          {generatedLink && (
-            <Alert className="mt-6">
-              <AlertDescription>
-                <div className="break-all">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="font-medium">{t('secureLink')}</p>
-                    <CopyButton value={generatedLink} />
-                  </div>
-                  <p className="text-sm">{generatedLink}</p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {t('linkWarning')}
-                  </p>
+              <TabsContent value="message">
+                <div className="space-y-4">
+                  <Textarea
+                    placeholder={t('enterMessage')}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className="min-h-[150px]"
+                  />
                 </div>
-              </AlertDescription>
-            </Alert>
-          )}
-        </Tabs>
-      </Card>
-    </div>
+              </TabsContent>
+
+              <TabsContent value="password">
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      type="text"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder={t('passwordPlaceholder')}
+                      readOnly
+                    />
+                    {message && <CopyButton value={message} />}
+                  </div>
+                  <Button 
+                    onClick={handleGeneratePassword}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    {t('generatePassword')}
+                  </Button>
+                </div>
+              </TabsContent>
+
+              <div className="mt-6">
+                <Button
+                  onClick={handleSubmit}
+                  className="w-full"
+                  disabled={!message || loading}
+                >
+                  {loading ? t('generating') : t('generateLink')}
+                </Button>
+              </div>
+
+              {generatedLink && (
+                <Alert className="mt-6">
+                  <AlertDescription>
+                    <div className="break-all">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="font-medium">{t('secureLink')}</p>
+                        <CopyButton value={generatedLink} />
+                      </div>
+                      <p className="text-sm">{generatedLink}</p>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        {t('linkWarning')}
+                      </p>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </Tabs>
+          </Card>
+        </div>
+      </div>
+    </>
   );
 }
