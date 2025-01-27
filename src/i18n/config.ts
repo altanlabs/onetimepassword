@@ -24,6 +24,9 @@ const resources = {
       error: 'Error',
       linkError: 'Failed to generate secure link.',
       passwordPlaceholder: 'Generated password will appear here',
+      copied: 'Copied!',
+      copiedToClipboard: 'Content copied to clipboard',
+      copyError: 'Failed to copy to clipboard',
     },
   },
   es: {
@@ -47,6 +50,9 @@ const resources = {
       error: 'Error',
       linkError: 'Error al generar el enlace seguro.',
       passwordPlaceholder: 'La contraseña generada aparecerá aquí',
+      copied: '¡Copiado!',
+      copiedToClipboard: 'Contenido copiado al portapapeles',
+      copyError: 'Error al copiar al portapapeles',
     },
   },
   ca: {
@@ -70,6 +76,9 @@ const resources = {
       error: 'Error',
       linkError: "Error en generar l'enllaç segur.",
       passwordPlaceholder: 'La contrasenya generada apareixerà aquí',
+      copied: 'Copiat!',
+      copiedToClipboard: 'Contingut copiat al porta-retalls',
+      copyError: 'Error en copiar al porta-retalls',
     },
   },
 };

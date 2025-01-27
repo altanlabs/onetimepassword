@@ -5,6 +5,8 @@ import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LanguageSwitcher } from '@/components/blocks/language-switcher';
+import { retrieveMessage } from '@/utils/api';
+import { CopyButton } from '@/components/ui/copy-button';
 
 export default function ViewMessagePage() {
   const { token } = useParams();
@@ -15,19 +17,13 @@ export default function ViewMessagePage() {
 
   useEffect(() => {
     const fetchMessage = async () => {
+      if (!token) return;
+      
       try {
-        // Here we'll implement the API call to fetch and decrypt the message
-        // For now, simulating API call with timeout
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Simulate an expired or already viewed message
-        if (Math.random() > 0.5) {
-          setError(t('messageExpired'));
-        } else {
-          setMessage('This is a secure message that will be shown only once.');
-        }
+        const decryptedMessage = await retrieveMessage(token);
+        setMessage(decryptedMessage);
       } catch (err) {
-        setError(t('fetchError'));
+        setError(t('messageExpired'));
       } finally {
         setLoading(false);
       }
@@ -57,7 +53,10 @@ export default function ViewMessagePage() {
           </Alert>
         ) : (
           <Alert>
-            <AlertTitle>{t('secureMessage')}</AlertTitle>
+            <div className="flex items-center justify-between mb-2">
+              <AlertTitle>{t('secureMessage')}</AlertTitle>
+              {message && <CopyButton value={message} />}
+            </div>
             <AlertDescription className="mt-2 whitespace-pre-wrap">
               {message}
             </AlertDescription>

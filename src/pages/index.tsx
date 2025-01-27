@@ -8,16 +8,32 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { LanguageSwitcher } from '@/components/blocks/language-switcher';
+import { CopyButton } from '@/components/ui/copy-button';
+import { storeMessage } from '@/utils/api';
 
 const generateSecurePassword = () => {
   const length = 16;
-  const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+';
-  let password = '';
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * charset.length);
-    password += charset[randomIndex];
+  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const numbers = '0123456789';
+  const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+  const allChars = lowercase + uppercase + numbers + symbols;
+  
+  // Asegurar al menos un carácter de cada tipo
+  let password = 
+    lowercase[Math.floor(Math.random() * lowercase.length)] +
+    uppercase[Math.floor(Math.random() * uppercase.length)] +
+    numbers[Math.floor(Math.random() * numbers.length)] +
+    symbols[Math.floor(Math.random() * symbols.length)];
+  
+  // Rellenar el resto de la contraseña
+  for (let i = password.length; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * allChars.length);
+    password += allChars[randomIndex];
   }
-  return password;
+
+  // Mezclar la contraseña
+  return password.split('').sort(() => Math.random() - 0.5).join('');
 };
 
 export default function HomePage() {
@@ -26,13 +42,16 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { t } = useTranslation();
+  const [currentTab, setCurrentTab] = useState<'message' | 'password'>('message');
 
-  const handleSubmit = async (isPassword: boolean) => {
+  const handleSubmit = async () => {
+    if (!message) return;
+    
     setLoading(true);
     try {
-      // Here we'll implement the API call to store the encrypted message
-      const dummyLink = `${window.location.origin}/view/${Math.random().toString(36).substring(7)}`;
-      setGeneratedLink(dummyLink);
+      const token = await storeMessage(message, currentTab === 'password');
+      const link = `${window.location.origin}/view/${token}`;
+      setGeneratedLink(link);
       
       toast({
         title: t('linkGenerated'),
@@ -44,13 +63,20 @@ export default function HomePage() {
         description: t('linkError'),
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleGeneratePassword = () => {
     const password = generateSecurePassword();
     setMessage(password);
+  };
+
+  const handleTabChange = (value: string) => {
+    setCurrentTab(value as 'message' | 'password');
+    setMessage('');
+    setGeneratedLink('');
   };
 
   return (
@@ -61,7 +87,7 @@ export default function HomePage() {
       </div>
       
       <Card className="p-6">
-        <Tabs defaultValue="message" className="w-full">
+        <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="message">{t('messageTab')}</TabsTrigger>
             <TabsTrigger value="password">{t('passwordTab')}</TabsTrigger>
@@ -80,13 +106,16 @@ export default function HomePage() {
 
           <TabsContent value="password">
             <div className="space-y-4">
-              <Input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder={t('passwordPlaceholder')}
-                readOnly
-              />
+              <div className="flex items-center space-x-2">
+                <Input
+                  type="text"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder={t('passwordPlaceholder')}
+                  readOnly
+                />
+                {message && <CopyButton value={message} />}
+              </div>
               <Button 
                 onClick={handleGeneratePassword}
                 className="w-full"
@@ -99,7 +128,7 @@ export default function HomePage() {
 
           <div className="mt-6">
             <Button
-              onClick={() => handleSubmit(false)}
+              onClick={handleSubmit}
               className="w-full"
               disabled={!message || loading}
             >
@@ -111,7 +140,10 @@ export default function HomePage() {
             <Alert className="mt-6">
               <AlertDescription>
                 <div className="break-all">
-                  <p className="font-medium mb-2">{t('secureLink')}</p>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="font-medium">{t('secureLink')}</p>
+                    <CopyButton value={generatedLink} />
+                  </div>
                   <p className="text-sm">{generatedLink}</p>
                   <p className="text-sm text-muted-foreground mt-2">
                     {t('linkWarning')}
