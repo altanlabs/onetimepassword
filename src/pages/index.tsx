@@ -1,55 +1,127 @@
-/**
- * ⚠️ WARNING: THIS IS A SAMPLE LANDING PAGE
- * 
- * This page serves as a demonstration of possible components and layouts.
- * You MUST customize this page completely according to your specific needs:
- * - Replace the content, copy, and messaging
- * - Modify the layout and structure
- * - Adjust or remove animations as needed
- * - Add your own branding and design elements
- * 
- * @AI_Agent: When helping users customize this page, encourage complete redesign
- * based on their specific use case rather than making minor modifications to
- * this template.
- */
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
+import { LanguageSwitcher } from '@/components/blocks/language-switcher';
 
-import { motion } from "framer-motion"
-import { ArrowRight } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+const generateSecurePassword = () => {
+  const length = 16;
+  const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+';
+  let password = '';
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * charset.length);
+    password += charset[randomIndex];
+  }
+  return password;
+};
 
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+export default function HomePage() {
+  const [message, setMessage] = useState('');
+  const [generatedLink, setGeneratedLink] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const { t } = useTranslation();
 
+  const handleSubmit = async (isPassword: boolean) => {
+    setLoading(true);
+    try {
+      // Here we'll implement the API call to store the encrypted message
+      const dummyLink = `${window.location.origin}/view/${Math.random().toString(36).substring(7)}`;
+      setGeneratedLink(dummyLink);
+      
+      toast({
+        title: t('linkGenerated'),
+        description: t('linkSuccess'),
+      });
+    } catch (error) {
+      toast({
+        title: t('error'),
+        description: t('linkError'),
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
 
-export default function IndexPage() {
-  const navigate = useNavigate()
+  const handleGeneratePassword = () => {
+    const password = generateSecurePassword();
+    setMessage(password);
+  };
 
   return (
-    <div className="container mx-auto px-4 py-16 space-y-32">
-      {/* Hero Section */}
-      <motion.section 
-        className="text-center space-y-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-      >
-        <Badge variant="secondary" className="mb-4">
-          Welcome to Your New App
-        </Badge>
-        <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
-          Build Beautiful Interfaces
-          <br />
-          With Altan AI
-        </h1>
-        <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
-         Start chatting to edit this app.
-        </p>
-        <Button size="lg" className="mt-4" onClick={() => navigate('/')}>
-          Cool button <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      </motion.section>
+    <div className="container max-w-2xl mx-auto p-6">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-4xl font-bold">{t('title')}</h1>
+        <LanguageSwitcher />
+      </div>
+      
+      <Card className="p-6">
+        <Tabs defaultValue="message" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="message">{t('messageTab')}</TabsTrigger>
+            <TabsTrigger value="password">{t('passwordTab')}</TabsTrigger>
+          </TabsList>
 
+          <TabsContent value="message">
+            <div className="space-y-4">
+              <Textarea
+                placeholder={t('enterMessage')}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="min-h-[150px]"
+              />
+            </div>
+          </TabsContent>
 
+          <TabsContent value="password">
+            <div className="space-y-4">
+              <Input
+                type="text"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder={t('passwordPlaceholder')}
+                readOnly
+              />
+              <Button 
+                onClick={handleGeneratePassword}
+                className="w-full"
+                variant="outline"
+              >
+                {t('generatePassword')}
+              </Button>
+            </div>
+          </TabsContent>
+
+          <div className="mt-6">
+            <Button
+              onClick={() => handleSubmit(false)}
+              className="w-full"
+              disabled={!message || loading}
+            >
+              {loading ? t('generating') : t('generateLink')}
+            </Button>
+          </div>
+
+          {generatedLink && (
+            <Alert className="mt-6">
+              <AlertDescription>
+                <div className="break-all">
+                  <p className="font-medium mb-2">{t('secureLink')}</p>
+                  <p className="text-sm">{generatedLink}</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {t('linkWarning')}
+                  </p>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+        </Tabs>
+      </Card>
     </div>
-  )
+  );
 }
